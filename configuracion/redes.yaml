@@ -1,0 +1,6 @@
+# Define las redes a escanear. Ajusta los CIDR a tu red.
+redes:
+  - nombre: 2.4G
+    cidr: 192.168.1.0/24
+  - nombre: 5G
+    cidr: 192.168.2.0/24

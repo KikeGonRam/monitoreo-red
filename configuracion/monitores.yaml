@@ -1,0 +1,8 @@
+# Lista de hosts a comprobar (nombre: host/ip)
+monitores:
+  - nombre: gateway
+    host: 192.168.1.1
+  - nombre: google
+    host: 8.8.8.8
+  - nombre: servidor_local
+    host: localhost

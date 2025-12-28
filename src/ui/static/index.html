@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mi Monitor RED — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Header Futurista -->
+  <header class="futurist-header">
+    <div class="header-grid">
+      <div class="logo-section">
+        <div class="logo-glow">
+          <i class="fas fa-satellite-dish"></i>
+        </div>
+        <div class="logo-text">
+          <h1>MI MONITOR RED</h1>
+          <p class="subtitle">SERVIDOR LOCAL • DASHBOARD EN TIEMPO REAL</p>
+        </div>
+      </div>
+      
+      <div class="status-section">
+        <div class="status-grid">
+          <div class="status-card neon-blue">
+            <div class="status-label">ESTADO SISTEMA</div>
+            <div class="status-value active" id="system-status">
+              <span class="pulse-dot"></span>
+              OPERATIVO
+            </div>
+          </div>
+          <div class="status-card neon-purple">
+            <div class="status-label">ÚLTIMA COMPROBACIÓN</div>
+            <div class="status-value" id="last-check">--:--:--</div>
+          </div>
+          <div class="status-card neon-green">
+            <div class="status-label">LATENCIA MEDIA</div>
+            <div class="status-value" id="avg-latency">-- ms</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Dashboard -->
+  <main class="dashboard-grid">
+    <!-- Columna Izquierda: Estado General -->
+    <section class="dashboard-column left-column">
+      <div class="card futurist-card">
+        <div class="card-header neon-border">
+          <h2><i class="fas fa-hexagon"></i> PANEL DE ESTADO</h2>
+        </div>
+        <div class="card-content">
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-icon">
+                <i class="fas fa-server"></i>
+              </div>
+              <div class="metric-data">
+                <div class="metric-value" id="total-monitors">--</div>
+                <div class="metric-label">MONITORES</div>
+              </div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="metric-icon">
+                <i class="fas fa-network-wired"></i>
+              </div>
+              <div class="metric-data">
+                <div class="metric-value" id="active-monitors">--</div>
+                <div class="metric-label">ACTIVOS</div>
+              </div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="metric-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="metric-data">
+                <div class="metric-value" id="failed-monitors">--</div>
+                <div class="metric-label">FALLANDO</div>
+              </div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="metric-icon">
+                <i class="fas fa-signal"></i>
+              </div>
+              <div class="metric-data">
+                <div class="metric-value" id="avg-response">-- ms</div>
+                <div class="metric-label">RESPUESTA</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Monitores -->
+      <div class="card futurist-card">
+        <div class="card-header neon-border">
+          <h2><i class="fas fa-satellite"></i> MONITORES ACTIVOS</h2>
+        </div>
+        <div class="card-content">
+          <div class="monitors-list" id="monitors-list">
+            <!-- Los monitores se cargarán aquí -->
+            <div class="loading-state">
+              <div class="scan-line"></div>
+              <p>INICIALIZANDO MONITORES...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Columna Central: Dispositivos por Red -->
+    <section class="dashboard-column center-column">
+      <div class="card futurist-card">
+        <div class="card-header neon-border">
+          <h2><i class="fas fa-globe-americas"></i> MAPA DE RED</h2>
+        </div>
+        <div class="card-content">
+          <div class="network-tabs">
+            <div class="tab active" data-network="2.4G">
+              <i class="fas fa-wifi"></i>
+              <span>2.4G NETWORK</span>
+              <span class="tab-badge" id="count-2.4G">--/--</span>
+            </div>
+            <div class="tab" data-network="5G">
+              <i class="fas fa-bolt"></i>
+              <span>5G NETWORK</span>
+              <span class="tab-badge" id="count-5G">--/--</span>
+            </div>
+          </div>
+
+          <div class="devices-container">
+            <div id="networks-container">
+              <div class="loading-state">
+                <div class="scan-line"></div>
+                <p>ESCANEANDO REDES...</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="scan-status">
+            <div class="progress-bar">
+              <div class="progress-fill" id="scan-progress"></div>
+            </div>
+            <div class="scan-info">
+              <span id="scan-text">INICIALIZANDO ESCÁNER</span>
+              <span id="page-info">PÁGINA --/--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Columna Derecha: Controles y Acciones -->
+    <section class="dashboard-column right-column">
+      <div class="card futurist-card">
+        <div class="card-header neon-border">
+          <h2><i class="fas fa-cogs"></i> CONTROLES</h2>
+        </div>
+        <div class="card-content">
+          <div class="controls-grid">
+            <button class="control-btn primary-btn" id="refresh-btn">
+              <div class="btn-content">
+                <i class="fas fa-sync-alt"></i>
+                <span>ACTUALIZAR AHORA</span>
+              </div>
+              <div class="btn-pulse"></div>
+            </button>
+            
+            <div class="toggle-control">
+              <div class="toggle-label">
+                <i class="fas fa-redo"></i>
+                <span>AUTO-REFRESH 30s</span>
+              </div>
+              <label class="toggle-switch futurist">
+                <input type="checkbox" id="auto-refresh" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            
+            <button class="control-btn secondary-btn" id="scan-btn">
+              <div class="btn-content">
+                <i class="fas fa-radar"></i>
+                <span>ESCANEO COMPLETO</span>
+              </div>
+            </button>
+            
+            <div class="stats-display">
+              <div class="stat-item">
+                <div class="stat-label">ÚLTIMA ACTUALIZACIÓN UI</div>
+                <div class="stat-value" id="ui-refresh">--:--:--</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">TIEMPO ACTIVO</div>
+                <div class="stat-value" id="uptime">00:00:00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información del Servidor -->
+      <div class="card futurist-card">
+        <div class="card-header neon-border">
+          <h2><i class="fas fa-database"></i> SERVIDOR LOCAL</h2>
+        </div>
+        <div class="card-content">
+          <div class="server-info">
+            <div class="server-ip">
+              <i class="fas fa-hashtag"></i>
+              <div class="ip-display">
+                <span class="ip-label">DIRECCIÓN IP</span>
+                <span class="ip-value" id="server-ip">192.168.1.89</span>
+              </div>
+            </div>
+            
+            <div class="server-stats">
+              <div class="server-stat">
+                <div class="server-stat-value">Ubuntu</div>
+                <div class="server-stat-label">SISTEMA</div>
+              </div>
+              <div class="server-stat">
+                <div class="server-stat-value">Nginx</div>
+                <div class="server-stat-label">SERVIDOR</div>
+              </div>
+              <div class="server-stat">
+                <div class="server-stat-value">Local</div>
+                <div class="server-stat-label">ENTORNO</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="futurist-footer">
+    <div class="footer-content">
+      <div class="footer-left">
+        <div class="terminal-text">
+          <span class="terminal-prompt">></span>
+          <span class="terminal-output" id="terminal-output">SISTEMA MONITOR RED INICIADO</span>
+        </div>
+      </div>
+      <div class="footer-right">
+        <div class="version-badge">
+          <i class="fas fa-code-branch"></i>
+          <span>v2.0 • LOCALHOST</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
