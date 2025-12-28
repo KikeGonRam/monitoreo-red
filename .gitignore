@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+*.sqlite3
+
+# Logs
+registros/
+*.log
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Node modules (if ever)
+node_modules/
+
+# Build
+dist/
+build/
+
+# Docker
+*.env
+**/docker-compose.override.yml
+
+# Byte-compiled
+*.pyc
