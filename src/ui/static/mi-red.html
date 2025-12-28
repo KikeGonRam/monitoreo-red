@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mi Monitor RED — Vistas API</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Minimal subset of the dashboard styles for a coherent look */
+    :root{--neon-blue:#00f3ff;--bg-primary:#0a0a0f;--bg-card:rgba(18,18,26,0.9);--text-primary:#fff;--text-tertiary:#707090;--font-tech:'Orbitron',monospace}
+    body{font-family:Inter,system-ui;background:var(--bg-primary);color:var(--text-primary);margin:0}
+    .header{padding:16px 24px;border-bottom:1px solid rgba(0,243,255,0.08);display:flex;justify-content:space-between;align-items:center}
+    .logo-text h1{font-family:var(--font-tech);letter-spacing:2px}
+    .main{max-width:1200px;margin:20px auto;padding:16px}
+    .card{background:var(--bg-card);border:1px solid rgba(0,243,255,0.06);border-radius:10px;padding:16px;margin-bottom:16px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.02);font-size:13px}
+    .ip{font-family:var(--font-tech);color:var(--neon-blue)}
+    .controls{display:flex;gap:8px;align-items:center}
+    .btn{background:linear-gradient(135deg,var(--neon-blue),#b967ff);border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo-text">
+      <h1>MI MONITOR RED</h1>
+      <div style="font-size:12px;color:var(--text-tertiary)">Vistas API</div>
+    </div>
+    <div class="controls">
+      <button id="reload-btn" class="btn"><i class="fas fa-sync-alt"></i> Recargar</button>
+      <button id="scan-btn" class="btn"><i class="fas fa-radar"></i> Escanear</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="card">
+      <h3>Monitores</h3>
+      <div id="monitors-area">Cargando monitores...</div>
+    </div>
+
+    <div class="card">
+      <h3>Redes y Dispositivos</h3>
+      <div id="networks-area">Cargando redes...</div>
+    </div>
+
+    <div class="card">
+      <h3>Métricas (últimos)</h3>
+      <canvas id="metricsChart" style="height:200px"></canvas>
+    </div>
+  </main>
+
+  <script>
+    async function fetchMonitors(){
+      try{const r=await fetch('/api/monitors');const j=await r.json();renderMonitors(j.results||[])}catch(e){document.getElementById('monitors-area').textContent='Error al cargar monitores'}
+    }
+    function renderMonitors(list){
+      const el=document.getElementById('monitors-area');
+      if(!list.length){el.innerHTML='<div>No hay monitores configurados</div>';return}
+      el.innerHTML = '<table><thead><tr><th>Nombre</th><th>Host</th><th>Estado</th><th>RTT (ms)</th></tr></thead><tbody>'+list.map(m=>`<tr><td>${m.name||m.nombre||''}</td><td class="ip">${m.host||m.host}</td><td>${m.ok?'<span style="color:#00ff9d">ONLINE</span>':'<span style="color:#ff6b00">OFFLINE</span>'}</td><td>${m.rtt_ms??'--'}</td></tr>`).join('')+'</tbody></table>';
+    }
+
+    async function fetchNetworks(){
+      try{const r=await fetch('/api/devices');const j=await r.json();renderNetworks(j.networks||[])}catch(e){document.getElementById('networks-area').textContent='Error al cargar redes'}
+    }
+    function renderNetworks(nets){
+      const el=document.getElementById('networks-area');
+      if(!nets.length){el.innerHTML='<div>No hay redes definidas</div>';return}
+      let html='';
+      nets.forEach(net=>{
+        html+=`<div style="margin-bottom:12px"><strong>${net.nombre||net.cidr}</strong> <small style="color:var(--text-tertiary)">${net.cidr||''}</small>`;
+        if((net.devices||[]).length===0) html+=`<div style="padding:8px;color:var(--text-tertiary)">Sin dispositivos</div>`;
+        else{
+          html+=`<table><thead><tr><th>IP</th><th>MAC</th><th>HOST</th><th>ESTADO</th></tr></thead><tbody>`;
+          (net.devices||[]).forEach(d=>{html+=`<tr><td class="ip">${d.ip}</td><td>${d.mac||'--'}</td><td>${d.hostname||'--'}</td><td>${d.ok?'<span style="color:#00ff9d">ONLINE</span>':'<span style="color:#ff6b00">OFFLINE</span>'}</td></tr>`})
+          html+=`</tbody></table>`
+        }
+        html+='</div>'
+      })
+      el.innerHTML=html
+    }
+
+    async function fetchMetrics(){
+      try{const r=await fetch('/api/metrics?limit=50');const j=await r.json();renderMetrics(j)}catch(e){console.warn(e)}
+    }
+    let chart=null;
+    function renderMetrics(rows){
+      const labels=rows.map(r=>new Date(r.ts*1000).toLocaleTimeString()).reverse();
+      const cpu=rows.filter(r=>r.metric==='cpu_percent').map(r=>r.value).reverse();
+      if(!chart){const ctx=document.getElementById('metricsChart');chart=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{label:'CPU %',data:cpu,borderColor:'rgb(0,243,255)',backgroundColor:'rgba(0,243,255,0.1)',fill:true}]},options:{responsive:true,maintainAspectRatio:false}})}else{chart.data.labels=labels;chart.data.datasets[0].data=cpu;chart.update()}
+    }
+
+    document.getElementById('reload-btn').addEventListener('click',()=>{fetchMonitors();fetchNetworks();fetchMetrics();});
+    document.getElementById('scan-btn').addEventListener('click',async ()=>{await fetch('/api/devices/refresh',{method:'POST'});setTimeout(fetchNetworks,1500)});
+
+    fetchMonitors();fetchNetworks();fetchMetrics();setInterval(fetchMetrics,5000);
+  </script>
+</body>
+</html>
