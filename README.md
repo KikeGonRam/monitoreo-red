@@ -56,5 +56,30 @@ Abre en tu navegador: http://localhost:8000
 Notas:
 - El servidor usa la librería estándar `http.server` y es solo para desarrollo.
 - Para integrar con el backend, crea endpoints JSON en `src/` y actualiza la UI para consumirlos.
-
 Si quieres, actualizo el `README.md` con un ejemplo de `docker-compose.yml` para servir la UI y el backend.
+
+Docker
+------
+
+Ejemplo rápido usando `docker-compose` incluido:
+
+```bash
+docker build -t monitoreo-red:latest .
+docker compose up --build
+```
+
+Esto levantará el servicio en `http://localhost:8000` (configurable en `docker-compose.yml`).
+
+Archivos añadidos:
+- `.gitignore`: entradas comunes para Python, logs e IDEs.
+- `Dockerfile`: contenedor básico para el servicio Python.
+- `docker-compose.yml`: orquestación simple para desarrollo.
+
+Imagen del proyecto
+-------------------
+
+![Captura del dashboard](image/image.png)
+
+Siguientes pasos recomendados:
+- Añadir variables de entorno seguras en un archivo `.env` y excluirlo del repositorio.
+- Configurar Gunicorn + Nginx en producción si se quiere rendimiento y TLS.
